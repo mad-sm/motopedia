@@ -6,6 +6,7 @@ import '../utils/session_manager.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -34,16 +35,19 @@ class _HomePageState extends State<HomePage> {
     final model = _modelController.text.trim();
     if (make.isEmpty) {
       setState(() {
-        _error = "Kolom 'make' wajib diisi (contoh: Honda, Yamaha, Suzuki, dst).";
+        _error =
+            "Kolom 'make' wajib diisi (contoh: Honda, Yamaha, Suzuki, dst).";
         _results = [];
       });
       return;
     }
+
     setState(() {
       _loading = true;
       _error = null;
       _results = [];
     });
+
     try {
       final res = await ApiService().fetchMotorcycles(
         make: make,
@@ -52,7 +56,9 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _results = res;
         _loading = false;
-        if (res.isEmpty) _error = "Tidak ada data ditemukan untuk make/model tersebut.";
+        if (res.isEmpty) {
+          _error = "Tidak ada data ditemukan untuk make/model tersebut.";
+        }
       });
     } catch (e) {
       setState(() {
@@ -62,13 +68,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _goToProfile() {
-    Navigator.pushNamed(context, '/profile');
-  }
-
+  void _goToProfile() => Navigator.pushNamed(context, '/profile');
   void _logout() async {
     await SessionManager.clearSession();
-    // ignore: use_build_context_synchronously
     Navigator.pushReplacementNamed(context, '/login');
   }
 
@@ -84,44 +86,109 @@ class _HomePageState extends State<HomePage> {
         onProfile: _goToProfile,
         onLogout: _logout,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 199, 22, 22),
+              Color.fromARGB(255, 74, 124, 170),
+              Color.fromARGB(255, 22, 22, 22),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _makeController,
-                    decoration: const InputDecoration(
-                      labelText: "Make (wajib, misal: Honda)",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _modelController,
-                    decoration: const InputDecoration(
-                      labelText: "Model (opsional, misal: Supra)",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _loading ? null : _search,
-                  child: const Text("Search"),
-                ),
-              ],
+            Text(
+              "Motopedia Search",
+              style: const TextStyle(
+                fontFamily: 'MotoGP',
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-            const SizedBox(height: 14),
-            if (_loading) const CircularProgressIndicator(),
+            const SizedBox(height: 12),
+            Card(
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 6,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _makeController,
+                      decoration: InputDecoration(
+                        labelText: "Make (misal: Honda)",
+                        prefixIcon: const Icon(Icons.motorcycle),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        labelStyle: const TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _modelController,
+                      decoration: InputDecoration(
+                        labelText: "Model (opsional)",
+                        prefixIcon: const Icon(Icons.build),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        labelStyle: const TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: _loading ? null : _search,
+                        icon: const Icon(Icons.search),
+                        label: const Text("Cari Motor"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            199,
+                            22,
+                            22,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          textStyle: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            if (_loading) const CircularProgressIndicator(color: Colors.white),
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.all(12),
-                child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(
+                    color: Colors.yellowAccent,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             if (_results.isNotEmpty)
               Expanded(
@@ -130,11 +197,25 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, i) {
                     final m = _results[i];
                     return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: ListTile(
-                        title: Text("${m.make} ${m.model}"),
-                        subtitle: Text("Tahun: ${m.year}  •  Tipe: ${m.type}"),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                        leading: const Icon(
+                          Icons.two_wheeler,
+                          color: Colors.red,
+                        ),
+                        title: Text(
+                          "${m.make} ${m.model}",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        subtitle: Text("Tahun: ${m.year} • Tipe: ${m.type}"),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                         onTap: () => _goToDetail(m),
                       ),
                     );
